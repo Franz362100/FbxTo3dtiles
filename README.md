@@ -1,35 +1,46 @@
-# FbxTo3dtiles
+# FBX 转 glTF 2.0（GLB）/ 3D Tiles 1.1
 
-FBX -> glTF 2.0 GLB converter using UFBX.
+基于 UFBX 的 FBX 转换工具，支持导出 GLB 与 3D Tiles 1.1。
 
-## Setup
+## 环境与依赖
 
-The converter embeds textures into the GLB output (no external files).
-3D Tiles export defaults to shared external textures under `output_dir\\textures` to reduce size.
+- GLB 输出默认嵌入纹理（无外部文件）。
+- 3D Tiles 输出默认将纹理写入 `output_dir\\textures` 共享目录以减少体积。
 
-UFBX sources are downloaded into `vendor/ufbx/`:
+UFBX 源码默认放在 `vendor/ufbx/`：
 - `vendor/ufbx/ufbx.h`
 - `vendor/ufbx/ufbx.c`
 
-You can also set `UFBX_DIR` to a folder containing those files.
+也可以通过环境变量 `UFBX_DIR` 指定包含上述文件的目录。
 
-## Build
+## 构建
 
 ```powershell
 cargo build
 ```
 
-## Run
+## 运行（GLB）
 
 ```powershell
-cargo run -- path\to\input.fbx path\to\output.glb
+cargo run -- path\to\input.fbx path\to\output.glb [--no-flip-v]
 ```
 
-## 3D Tiles 1.1
+参数说明（GLB）
+
+- `input`：输入 FBX 路径
+- `output`：输出 GLB 路径
+- `--no-flip-v`：不翻转 UV 的 V 方向（默认会翻转 V）
+
+## 运行（3D Tiles 1.1）
 
 ```powershell
-cargo run -- tiles path\to\input.fbx path\to\output_dir
+cargo run -- tiles path\to\input.fbx path\to\output_dir [options]
 ```
+
+输出结构：
+- `output_dir\\tileset.json`
+- `output_dir\\tiles\\`（每个 tile 一个 GLB）
+- `output_dir\\textures\\`（默认共享纹理）
 
 默认地理参考：
 - 经纬度：116.397026 / 39.918058
@@ -46,17 +57,41 @@ cargo run -- tiles path\to\input.fbx path\to\output_dir `
   --embed-textures
 ```
 
-可选参数：
-- `--no-flip-v`：禁用 UV 的 V 方向翻转（默认会翻转 V）。
+参数说明（Tiles）
 
-## Notes
+- `input`：输入 FBX 路径
+- `output_dir`：输出目录（写入 `tileset.json`、`tiles/`、`textures/`）
+- `--origin-lat`：原点纬度（度）
+- `--origin-lon`：原点经度（度）
+- `--origin-height`：原点高度（米）
+- `--heading`：本地坐标绕 +Y 的旋转角（度）
+- `--scale`：FBX 坐标缩放系数
+- `--tile-size`：根层 tile 尺寸（米）
+- `--min-tile-size`：最小 tile 尺寸（米），用于推导最大层级
+- `--max-level`：覆盖最大四叉树层级（优先级高于 `min-tile-size` 推导）
+- `--embed-textures`：将纹理嵌入每个 tile（默认共享外部纹理）
+- `--no-flip-v`：不翻转 UV 的 V 方向（默认会翻转 V）
 
-- Geometry is triangulated via UFBX and converted to glTF right-handed Y-up.
-- Output includes POSITION/NORMAL/UV/COLOR/TANGENT for each primitive.
-- Lambert/Phong materials are approximated to metallic-roughness PBR.
-- GLB output embeds textures; unsupported formats are re-encoded to PNG/JPG when possible.
-- 3D Tiles output stores textures under `output_dir\\textures` (shared); use `--embed-textures` to force per-tile embedding.
+## 备注
 
-## Third-party
+- 几何通过 UFBX 三角化，并转换为右手系 Y-up 的 glTF。
+- 输出包含 POSITION/NORMAL/UV/COLOR/TANGENT。
+- Lambert/Phong 材质近似为金属-粗糙度 PBR。
+- GLB 输出默认嵌入纹理；不支持的格式会尽量转为 PNG/JPG。
+- 3D Tiles 默认共享纹理目录 `output_dir\\textures`，可用 `--embed-textures` 改为每个 tile 内嵌。
 
-See `THIRD_PARTY.md` for a list of bundled/open-source components.
+
+
+## License
+
+This project is licensed under MIT License.
+
+### Embedded Third-party Code
+
+- **UFBX** (MIT License) - Bundled in `vendor/ufbx/`
+  - See `vendor/ufbx/LICENSE` for details
+
+### Rust Dependencies
+
+All Rust dependencies are listed in `Cargo.toml` with their respective licenses.
+Use `cargo license` to view the full dependency license list.
