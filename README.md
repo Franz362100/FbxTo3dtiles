@@ -1,4 +1,4 @@
-# ufbx_rust
+# FbxTo3dtiles
 
 FBX -> glTF 2.0 GLB converter using UFBX.
 
